@@ -1,0 +1,28 @@
+pragma solidity 0.7.5; 
+
+
+//This code is just an example of how to create mapping with a struct
+
+contract DogRegistry{
+    
+    struct Dog{
+        string name;
+        uint age;
+    }
+    
+    mapping(address => Dog) Doggies;
+    
+    function createDog(string memory _name, uint _age) public {
+        Dog memory newDog; 
+        newDog.name = _name;
+        newDog.age = _age;
+        
+        Doggies[msg.sender] = newDog;
+    }
+    
+    
+    function getDog() public view returns(string memory name, uint age){
+        return (Doggies[msg.sender].name, Doggies[msg.sender].age);
+        
+    }
+}
