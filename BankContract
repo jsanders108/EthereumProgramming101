@@ -1,0 +1,74 @@
+pragma solidity 0.7.5; 
+
+contract Bank{
+    
+    //the parentheses after helloWorld is where we enter any inputs we may have; pure means it doesn't interact with 
+    //anything outside the function; strings always have to be assigned to memory within a function
+    
+
+     mapping(address => uint) balance;
+     
+     address owner; 
+     
+     event depositDone(uint amount, address indexed depositedTo);
+     event balanceTransferred(uint amount, address indexed transferredTo);
+     
+     modifier onlyOwner{
+         require(msg.sender == owner);
+         _;
+     }
+     
+     
+     constructor(){
+         owner = msg.sender; 
+     } 
+ 
+     function deposit() public payable returns (uint){
+         
+         balance[msg.sender] += msg.value; 
+         emit depositDone(msg.value, msg.sender);
+         return balance[msg.sender];
+        }
+        
+    function withdraw(uint amount) public returns (uint){
+        require(balance[msg.sender] >= amount);
+        balance[msg.sender] -= amount; 
+        msg.sender.transfer(amount);
+        return balance[msg.sender];
+        //if treating the contract as a wallet, can send funds to an address (doesn't have to be msg.sender)
+        //address payable toSend = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+        //toSend.transfer(amount)
+    }     
+        
+    function getBalance() public view returns (uint){
+        return balance[msg.sender];
+    }
+ 
+    
+    //the transfer functions below transfer "money" between accounts in the bank (smart contract).
+    //they don't send money outside of the smart contract
+    
+    function transfer(address recipient, uint amount) public {
+         require(balance[msg.sender] >= amount, "Insufficient Funds");
+         require(msg.sender != recipient, "Do not send funds to yourself");
+         
+         uint previousSenderBalance = balance[msg.sender];
+         
+         _transfer(msg.sender, recipient, amount);
+         
+         emit balanceTransferred(amount, recipient);
+         assert(balance[msg.sender] == previousSenderBalance - amount);
+    }
+ 
+ 
+    function _transfer(address from, address to, uint amount) private {
+        balance[from] -= amount; 
+        balance[to] += amount; 
+        
+    }
+ 
+ 
+}
+
+    //msg.sender: whomever is calling the function, msg.sender will call their address
+    //msg.value: will contain the value of the transaction if someone called function with an amount of ether
