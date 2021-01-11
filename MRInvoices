@@ -1,0 +1,81 @@
+pragma solidity 0.7.5;
+pragma abicoder v2;
+
+
+//Objective is to create a contract that stores and pays out market research invoices. 
+//Users will enter invoice ID and amount to a struct array
+//Mike and I will be the owners and payouts will require both our signatures/approvals
+//Maybe will need double mapping because a vedor could have muliple invoices
+//Model this on MultiSig Wallet code
+
+contract MarketResearchInvoices {
+    
+    
+    address[] public owners; 
+    uint limit; 
+    
+    mapping(address => mapping(uint => bool)) approvals; 
+    
+    //This struct contains the info for each individual invoice
+    struct Invoice{
+        uint invoiceNumber;
+        string company;
+        uint amount;
+        address payable receiver; 
+        uint numApprovals;
+        bool hasBeenPaid; 
+    }
+    
+    Invoice[] invoiceList; 
+    
+    
+    //modifier means that only owners can approve transaction
+     modifier onlyOwners(){
+        bool owner = false; 
+        for (uint i=0; i < owners.length; i++){
+            if(owners[i] == msg.sender){
+                owner = true;
+            }
+        }
+        require(owner == true);
+        _;
+    }
+    
+    //This function allows us to charge our account with money
+    function deposit() public payable{}
+    
+    
+    //This constructor allows user to enter the addresses of the owners, as well as set the approval limit
+    constructor(address[] memory _owners, uint _limit){
+        owners = _owners;
+        limit = _limit; 
+    }
+    
+    //This function allows user to enter an invoice along with the necessary info
+    function addInvoice(uint _invoiceNumber, string memory _company, uint _amount, address payable _receiver) public {
+        invoiceList.push(Invoice(_invoiceNumber, _company, _amount, _receiver, 0, false));
+    }
+    
+    //require that it hasn't already been paid out
+    //need to create a mapping
+    function approveInvoice(uint _id) public onlyOwners {
+        require (approvals[msg.sender][_id] == false);
+        require (invoiceList[_id].hasBeenPaid == false); 
+        approvals[msg.sender][_id] == true; 
+        invoiceList[_id].numApprovals++; 
+        
+        if(invoiceList[_id].numApprovals >= limit){
+            invoiceList[_id].hasBeenPaid == true;
+            invoiceList[_id].receiver.transfer(invoiceList[_id].amount);
+        }
+    }
+    
+    function deptBalance() public view returns(uint){
+        return address(this).balance; 
+    }
+    
+    function getTransferRequests() public view returns (Invoice[] memory) {
+        return invoiceList; 
+    }
+    
+}
