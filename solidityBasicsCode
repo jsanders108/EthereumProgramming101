@@ -1,0 +1,146 @@
+pragma solidity 0.7.5;
+
+contract codeExamples{
+    
+    //CONTRUCTOR
+    
+    string message;
+    
+    //This allows the contract deployer to set the value of message when contract is deployed
+    constructor (string memory _message){
+        message = _message; 
+    }
+    
+
+    
+    //IF-THEN STATEMENTS
+    
+    function hello(uint _number) public view returns (string memory) {
+        if(_number == 10){
+            return message; 
+        }
+        else{
+            return "Wrong Number"; 
+        }
+    }
+    
+    
+    //LOOPS
+    
+    function count(int _number) public pure returns(int){
+        int i = 0;
+        while( i < 10){
+            _number++;
+            i++;
+        }
+        return _number; 
+    }
+    
+    
+        function count2(int _number) public pure returns(int){
+        for (int i = 0; i < 10; i++){
+            _number++;
+        }
+        return _number; 
+    }
+    
+    //SETTER FUNCTIONS
+    
+    int number;
+    
+    function getNumber() public view returns (int){
+        return number; 
+    }
+    
+    function setNumber(int _number) public {
+        number = _number; 
+    }
+    
+    
+    //ARRAYS
+    
+    //this is a size 10 array called "dogs"
+    int[10] dogs; 
+    
+    //we can initialize the values
+    
+    int[3] theNumbers = [2, 5, 6]; 
+    
+    //dynamically sized array (we haven't set a size)
+    int[] numbers; 
+    
+    //we can add elements to an array using a function
+    
+    function addNumber(int _number) public {
+        numbers.push(_number);
+    }
+    
+    //we can get numbers out of the array
+    
+    function getNumber(uint _index) public view returns(int){
+        return numbers[_index]; 
+    }
+    
+    //we can return the entire array
+    
+    function getArray() public view returns(int[] memory){
+        return numbers; 
+    }
+    
+    
+    //STRUCTS
+    
+    struct Person{
+        uint age;
+        string name; 
+    }
+    
+    //this creates an array "people" filled with "persons"
+    Person[] people; 
+    
+    //this function adds an instance of a new person to the array "people"
+    function addPerson(uint _age, string memory _name) public {
+        Person memory newPerson = Person(_age, _name);
+        people.push(newPerson); 
+    }
+    
+    //this function gets the info for a person
+    function getPerson(uint _index) public view returns(uint, string memory){
+        Person memory personToReturn = people[_index];
+        return (personToReturn.age, personToReturn.name);
+    }
+    
+    //MAPPINGS
+    
+    //This mapping will tie balances to addresses
+    mapping (address => uint) balance;
+    
+    //This function adds funds to a particular address and increases its balance using the mapping
+    function addBalance(uint _toAdd) public returns (uint){
+        balance[msg.sender] += _toAdd; //another way to write: balance[msg.sender] = balance[msg.sender] + _toAdd
+        return balance[msg.sender];
+    }
+    
+    //This function gets tha balance for a particular address using the mapping
+    function getBalance() public view returns(uint){
+        return balance[msg.sender];
+    }
+    
+    
+    //DOUBLE MAPPINGS
+    
+    //This is a bit complicated, but think of it as each address having its own mapping (or table associated with it).
+    //For example, Address #1 has a table/mapping of transaction ID numbers and the status of each ID number (true/false)
+    mapping(address => mapping(uint => bool)) approvals; 
+    
+    //THis function targets the mapping for msg.sender , transaction id# (entered by the user) to "true". It shows that setting
+    //or accessing something in a double mapping requires the use of [][]
+    function approve(uint _id) public view{
+        approvals[msg.sender][_id] == true; 
+    }
+    
+    function getApproveStatus(uint _id) public view returns (bool){
+        return approvals[msg.sender][_id]; 
+    }
+    
+}
