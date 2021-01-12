@@ -1,0 +1,36 @@
+pragma solidity 0.7.5;
+
+contract PayableFunctions{
+    
+    
+    //DEPOSIT
+    
+    mapping (address => uint) balance;
+    
+    event depositDone(uint amount, address indexed depositedTo); 
+    
+    //the word "payable" allows this function to receive money when people call it. The Eth is deposited to the smart contract (but is mapped to the depositor
+    //--so we can track of individual balances) Balance of smart contract is the sum of all deposits
+    function deposit() public payable returns (uint){
+        balance[msg.sender] += msg.value; //increases by amount of Eth attached. Their account balance is stored in the mapping
+        emit depositDone(msg.value, msg.sender);
+        return balance[msg.sender];
+    }
+    
+    
+    //TRANSFER
+    
+    //this funtion is not "payable" because it's not going to be receiving any money
+    function withdraw(uint amount) public returns(uint) {
+        require(balance[msg.sender] >= amount); //this is key so someone can't drain all funds out of the smart contract
+        msg.sender.transfer(amount); //this transfers eth from the contract to the msg.sender. You could replace msg.sender with any address if you want (see function below)
+        return balance[msg.sender]; 
+        
+    }
+    
+      function _withdraw(uint amount) public {
+        address payable toSend =  0x5B38Da6a701c568545dCfcB03FcB875f56beddC4; //must mark this as "payable" if not msg.sender
+        toSend.transfer(amount); //this transfers eth from the contract to the msg.sender. You could replace msg.sender with any address if you want
+    }
+    
+}
