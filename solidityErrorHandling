@@ -1,0 +1,108 @@
+pragma solidity 0.7.5;
+
+contract codeExamples{
+    
+    
+    //REQUIRE
+    
+        mapping (address => uint) balance;
+            
+        //Below is the transfer function from the "Bank" contract. In it, we require the balance of
+        //msg.sender to be greater than the amount of the transfer, and we require that the sender not send to him/herself
+        function transfer(address recipient, uint amount) public {
+            require(balance[msg.sender] >= amount, "Insufficient balance");
+            require(msg.sender != recipient, "Don't send funds to yourself!");
+        
+            uint previousSenderBalance = balance[msg.sender];
+        
+            _transfer(msg.sender, recipient, amount);
+        }
+        
+        function _transfer(address from, address to, uint amount) private {
+            balance[from] -= amount;
+            balance[to] += amount;
+        }
+        
+        
+        //the configuration below is common; it requires the person adding balances to be the owner (which can be set to anyone, but in this case is msg.sender)
+        //it's in almost every smart contract--there are some owner/adminpriveledges
+        address owner;
+        
+        constructor(){
+            owner = msg.sender; 
+        }
+        
+        function addBalance(uint _toAdd) public returns(uint){
+            require(msg.sender == owner);
+            balance[msg.sender] += _toAdd;
+            return balance[msg.sender];
+        }
+        
+        
+    //ASSERT    
+        
+        //Assert checks to make sure our code does what it is supposed to do. It only throws an error if something is off with the code
+        
+        function transfer(address recipient, uint amount) public {
+            require(balance[msg.sender] >= amount, "Insufficient balance");
+            require(msg.sender != recipient, "Don't send funds to yourself!");
+        
+            uint previousSenderBalance = balance[msg.sender];
+        
+            _transfer(msg.sender, recipient, amount);
+        
+            assert(balance[msg.sender] == previousSenderBalance - amount);
+        
+            }
+
+        function _transfer(address from, address to, uint amount) private {
+            balance[from] -= amount;
+            balance[to] += amount;
+        }
+        
+        
+    
+    
+    
+    //MODIFIERS
+    
+       //modifiers can bee seen as a small function that always run at the beginning of a real function
+       address _owner;
+       
+       constructor(){
+            owner = msg.sender; 
+        }
+    
+        modifier onlyOwner {
+            require(msg.sender == _owner);
+            _;
+        }
+    
+        function addBalance(uint _toAdd) public onlyOwner returns(uint){
+            require(msg.sender == owner);
+            balance[msg.sender] += _toAdd;
+            return balance[msg.sender];
+        }
+    
+    
+        //below is another common usage of a modifier (setting a cost to run a transfer) IN the case below, a 
+        //transfer costs 100
+        modifier costs (uint price){
+            require(msg.value >= price);
+            _;
+        }
+    
+    
+        function transfer(address recipient, uint amount) public costs(100) {
+            require(balance[msg.sender] >= amount, "Insufficient balance");
+            require(msg.sender != recipient, "Don't send funds to yourself!");
+        
+            uint previousSenderBalance = balance[msg.sender];
+        
+            _transfer(msg.sender, recipient, amount);
+        
+            assert(balance[msg.sender] == previousSenderBalance - amount);
+        
+            }
+    
+}
