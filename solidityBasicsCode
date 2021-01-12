@@ -170,5 +170,19 @@ contract codeExamples{
         return approvals[msg.sender][_id]; 
     }
     
+    //EVENTS
+    
+    //events are important as a way to log event that happen during function execution. Can work as a notification (e.g. for an app)
+    
+    //adding "indexed" to an event is optional. If used, it(they) becomes indexed by ethereum nodes (meaning they are searchable). Max of three per event.  
+    //Use case: maybe a year later you can query to filter for all deposits that were made to a particular address (you can get a list of all deposits to this address)
+    event balanceAdded(uint amount, address indexed depositedTo);
+    
+    //the following creates an event whenever someone adds a balance to their bank account
+    function addBalance(uint _toAdd) public returns (uint){
+        balance[msg.sender] += _toAdd; //another way to write: balance[msg.sender] = balance[msg.sender] + _toAdd
+        emit balanceAdded(_toAdd, msg.sender);
+        return balance[msg.sender];
+    }
     
 }
