@@ -102,3 +102,28 @@ contract JasonBank{
 
         }
 }
+
+
+//ADD VALUE
+
+
+    function transfer(address recipient, uint amount) public {
+        require(balance[msg.sender] >= amount, "Insufficient balance");
+        require(msg.sender != recipient, "Don't send funds to yourself!");
+        
+        uint previousSenderBalance = balance[msg.sender];
+        
+        _transfer(msg.sender, recipient, amount);
+        
+        //if we want to add value to a function can implement code below (but need to make the function "payable")
+        governmentInstance.addTransaction{value: 1 ether}(msg.sender, recipient, amount);
+        assert(balance[msg.sender] == previousSenderBalance - amount);
+        
+        }
+
+//GET VALUE OF CURRENT CONTRACT
+
+      //the code below gets you the balance of the contract
+     return address(this).balance
+
+
