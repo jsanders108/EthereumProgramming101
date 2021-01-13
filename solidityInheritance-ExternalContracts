@@ -1,0 +1,104 @@
+pragma solidity 0.7.5;
+
+
+//INHERITANCE
+
+
+//We need to have a parent and a child contract. Note that the contract "Ownable" can be pulled out of this and placed into its own .sol file
+contract Ownable {
+    
+    //including the "public" here will let you click on a button to get the address of the owner. This is what 
+    //happens when you make a state variable public
+    //if I make it "internal" instead of public or private, "internal" makes it accessible only to a contract that inherits from Ownable
+    address public owner; 
+    
+    modifier onlyOwner{
+        require (msg.sender == owner); 
+        _; //run the function
+    }
+    
+    constructor(){
+        owner = msg.sender; 
+    }
+}
+
+//the "is ownable" allows the bank contract to inherit the functionality of the Ownable contract; the wthdrawETH function calls "OnlyOwner"
+
+import "./Ownable.sol"; //this piece of code imports "Ownable" contract if it has been saved to a separate file
+
+contract Bank is Ownable{
+    
+        mapping (address => uint) balance;
+    
+        function withdrawETH(uint amount) public onlyOwner returns(uint){
+        require(balance[msg.sender] >= amount, "Insufficient balance");
+        msg.sender.transfer(amount);
+        balance[msg.sender] -= amount;
+        return balance[msg.sender];
+    }
+}
+
+
+//EXTERNAL CONTRACTS
+
+
+//The contract below can be considered to be an external one (we need to report transactions to the government)
+contract Government{
+    
+    struct Transaction{
+      address from;  
+      address to;    
+      uint amount;
+      uint txID;
+        
+    }
+    
+    
+    Transaction[] transactionLog; 
+    
+    function addTransaction(address _from, address _to, uint _amount) external payable {
+          transactionLog.push(Transaction(_from, _to, _amount, transactionLog.length));
+    }
+    
+    function getTransaction(uint _index) public view returns (address, address, uint) {
+        return (transactionLog[_index].to, transactionLog[_index].from, transactionLog[_index].amount );
+        
+    }
+    
+    function getBalance() public view returns (uint){
+        return address(this).balance;
+    }
+}
+
+//the interface tells us which function we want to interact with in the Government contract (in JasonBank contract)
+interface GovernmentInterface{
+    function addTransaction(address _from, address _to, uint _amount) external payable;  //only need to include the function header
+}
+
+contract JasonBank{
+    
+    //the code below tells the my contract (JasonBank) where the Government contract is located
+    GovernmentInterface governmentInstance = GovernmentInterface(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4); 
+    
+    mapping (address => uint) balance;
+    
+    function transfer(address recipient, uint amount) public {
+        require(balance[msg.sender] >= amount, "Insufficient balance");
+        require(msg.sender != recipient, "Don't send funds to yourself!");
+        
+        uint previousSenderBalance = balance[msg.sender];
+        
+        _transfer(msg.sender, recipient, amount);
+        
+        governmentInstance.addTransaction(msg.sender, recipient, amount);
+        assert(balance[msg.sender] == previousSenderBalance - amount);
+        
+        }
+
+    function _transfer(address from, address to, uint amount) private {
+        emit balanceTransferred (amount, to, from);
+        balance[from] -= amount;
+        balance[to] += amount;
+
+        }
+}
