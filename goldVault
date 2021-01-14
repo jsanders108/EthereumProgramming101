@@ -12,6 +12,17 @@ contract GoldVault{
     mapping(address => Holding) portfolio; 
     
     mapping (address => uint) balance;
+    
+    event depositedETH(uint amount, address indexed depositor);
+    event withdrewETH(uint amount, address indexed withdrawer);
+    event eagleBought(uint amount, address indexed buyer);
+    event mapleBought(uint amount, address indexed buyer);
+    event barBought(uint amount, address indexed buyer);
+    event eagleSold(uint amount, address indexed seller);
+    event mapleSold(uint amount, address indexed seller);
+    event barSold(uint amount, address indexed seller);
+    
+
 
     //This function adds a brand new holding for a customer
     function addNewHolding(uint _idNum) public {
@@ -27,13 +38,17 @@ contract GoldVault{
     //This function allows customer to deposit ETH to his account at the vault
     function depositETH() public payable  {
         balance[msg.sender] += msg.value; 
+        emit depositedETH(msg.value, msg.sender);
     }
     
     
+   
+    
     function withdrawETH(uint _amount) public {
-        require(balance[msg.sender] >= _amount);
+        require(balance[msg.sender] >= _amount, "Insufficient Balance");
         msg.sender.transfer(_amount); 
         balance[msg.sender] -= _amount; 
+        emit withdrewETH(_amount, msg.sender);
     }
     
     
@@ -47,50 +62,56 @@ contract GoldVault{
     //cost of an Eagle = 1 ETH. Purchaser must have this amount in his/her account
     function buy1ozEagles(uint _numEagles) public {
         uint _totalCost = (_numEagles * 1 ether); 
-        require (balance[msg.sender] >= _totalCost); 
+        require (balance[msg.sender] >= _totalCost, "Insufficient Balance"); 
         portfolio[msg.sender].num1ozEagles += _numEagles; 
         balance[msg.sender] -= _totalCost; 
+        emit eagleBought(_numEagles, msg.sender);
     }
     
     
     function buy1ozMaples(uint _numMaples) public {
         uint _totalCost = (_numMaples * 1 ether); 
-        require (balance[msg.sender] >= _totalCost); 
+        require (balance[msg.sender] >= _totalCost, "Insufficient Balance"); 
         portfolio[msg.sender].num1ozMaples += _numMaples; 
-        balance[msg.sender] -= _totalCost; 
+        balance[msg.sender] -= _totalCost;
+        emit mapleBought(_numMaples, msg.sender);
     }
     
     
     function buy1ozBars(uint _numBars) public {
         uint _totalCost = (_numBars * 1 ether); 
-        require (balance[msg.sender] >= _totalCost); 
+        require (balance[msg.sender] >= _totalCost, "Insufficient Balance"); 
         portfolio[msg.sender].num1ozBars += _numBars; 
         balance[msg.sender] -= _totalCost; 
+        emit barBought(_numBars, msg.sender);
     }
     
 
     
     function sell1ozEagles(uint _numEagles) public {
         uint  _totalAmount = (_numEagles * 1 ether); 
-         require((portfolio[msg.sender].num1ozEagles >= _numEagles)); 
+         require((portfolio[msg.sender].num1ozEagles >= _numEagles), "Insufficient Number of Coins"); 
          portfolio[msg.sender].num1ozEagles -= _numEagles;
          balance[msg.sender] += _totalAmount; 
+         emit eagleSold(_numEagles, msg.sender);
     }
     
     
         function sell1ozMaples(uint _numMaples) public {
         uint  _totalAmount = (_numMaples * 1 ether); 
-         require((portfolio[msg.sender].num1ozMaples >= _numMaples)); 
+         require((portfolio[msg.sender].num1ozMaples >= _numMaples), "Insufficient Number of Coins"); 
          portfolio[msg.sender].num1ozMaples -= _numMaples;
-         balance[msg.sender] += _totalAmount; 
+         balance[msg.sender] += _totalAmount;
+         emit mapleSold(_numMaples, msg.sender);
     }
     
     
         function sell1ozBars(uint _numBars) public {
         uint  _totalAmount = (_numBars * 1 ether); 
-         require((portfolio[msg.sender].num1ozBars >= _numBars)); 
+         require((portfolio[msg.sender].num1ozBars >= _numBars), "Insufficient Number of Bars"); 
          portfolio[msg.sender].num1ozBars -= _numBars;
          balance[msg.sender] += _totalAmount; 
+         emit barSold(_numBars, msg.sender);
     }
     
     
@@ -99,9 +120,8 @@ contract GoldVault{
     }    
     
     
-    // see if i can implement a purchase function for each new product (involding a cost)
-    // when customer makes the purchase, it updates their portfolio
+}
     
 
     
-}
+
