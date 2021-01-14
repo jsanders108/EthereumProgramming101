@@ -1,0 +1,107 @@
+pragma solidity 0.7.5;
+
+contract GoldVault{
+    
+    struct Holding{
+        uint idNum;
+        uint num1ozEagles;
+        uint num1ozMaples;
+        uint num1ozBars;
+    }
+    
+    mapping(address => Holding) portfolio; 
+    
+    mapping (address => uint) balance;
+
+    //This function adds a brand new holding for a customer
+    function addNewHolding(uint _idNum) public {
+        Holding memory newHolding; 
+        newHolding.idNum = _idNum;
+        newHolding.num1ozEagles = 0; 
+        newHolding.num1ozMaples = 0;
+        newHolding.num1ozBars = 0;
+        
+        portfolio[msg.sender] = newHolding;
+    }
+    
+    //This function allows customer to deposit ETH to his account at the vault
+    function depositETH() public payable  {
+        balance[msg.sender] += msg.value; 
+    }
+    
+    
+    function withdrawETH(uint _amount) public {
+        require(balance[msg.sender] >= _amount);
+        msg.sender.transfer(_amount); 
+        balance[msg.sender] -= _amount; 
+    }
+    
+    
+    //This function allows the user to get his balance
+    function getBalance() public view returns (uint){
+        return balance[msg.sender];
+    }
+    
+    
+    //The three functions below allow person to buy the three products and they can enter the amount they wish to buy
+    //cost of an Eagle = 1 ETH. Purchaser must have this amount in his/her account
+    function buy1ozEagles(uint _numEagles) public {
+        uint _totalCost = (_numEagles * 1 ether); 
+        require (balance[msg.sender] >= _totalCost); 
+        portfolio[msg.sender].num1ozEagles += _numEagles; 
+        balance[msg.sender] -= _totalCost; 
+    }
+    
+    
+    function buy1ozMaples(uint _numMaples) public {
+        uint _totalCost = (_numMaples * 1 ether); 
+        require (balance[msg.sender] >= _totalCost); 
+        portfolio[msg.sender].num1ozMaples += _numMaples; 
+        balance[msg.sender] -= _totalCost; 
+    }
+    
+    
+    function buy1ozBars(uint _numBars) public {
+        uint _totalCost = (_numBars * 1 ether); 
+        require (balance[msg.sender] >= _totalCost); 
+        portfolio[msg.sender].num1ozBars += _numBars; 
+        balance[msg.sender] -= _totalCost; 
+    }
+    
+
+    
+    function sell1ozEagles(uint _numEagles) public {
+        uint  _totalAmount = (_numEagles * 1 ether); 
+         require((portfolio[msg.sender].num1ozEagles >= _numEagles)); 
+         portfolio[msg.sender].num1ozEagles -= _numEagles;
+         balance[msg.sender] += _totalAmount; 
+    }
+    
+    
+        function sell1ozMaples(uint _numMaples) public {
+        uint  _totalAmount = (_numMaples * 1 ether); 
+         require((portfolio[msg.sender].num1ozMaples >= _numMaples)); 
+         portfolio[msg.sender].num1ozMaples -= _numMaples;
+         balance[msg.sender] += _totalAmount; 
+    }
+    
+    
+        function sell1ozBars(uint _numBars) public {
+        uint  _totalAmount = (_numBars * 1 ether); 
+         require((portfolio[msg.sender].num1ozBars >= _numBars)); 
+         portfolio[msg.sender].num1ozBars -= _numBars;
+         balance[msg.sender] += _totalAmount; 
+    }
+    
+    
+    function viewHolding() public view returns(uint, uint, uint, uint){
+        return (portfolio[msg.sender].idNum, portfolio[msg.sender].num1ozEagles, portfolio[msg.sender].num1ozMaples, portfolio[msg.sender].num1ozBars);
+    }    
+    
+    
+    // see if i can implement a purchase function for each new product (involding a cost)
+    // when customer makes the purchase, it updates their portfolio
+    
+
+    
+}
